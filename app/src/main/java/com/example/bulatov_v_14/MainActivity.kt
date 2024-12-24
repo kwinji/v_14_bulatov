@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
@@ -242,8 +241,3 @@ fun DeleteMovieScreen(movieList: List<String>, onMovieDeleted: (String) -> Unit,
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    MovieBookingApp()
-}
