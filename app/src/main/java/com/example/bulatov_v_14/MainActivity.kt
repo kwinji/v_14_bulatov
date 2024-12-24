@@ -31,7 +31,9 @@ fun MovieBookingApp() {
     when (currentScreen) {
         "Home" -> HomeScreen(
             onNavigateToAdd = { currentScreen = "Add" },
-            onNavigateToList = { currentScreen = "List" }
+            onNavigateToList = { currentScreen = "List" },
+            onNavigateToEdit = { currentScreen = "Edit" }, // Переход в экран редактирования
+            onNavigateToDelete = { currentScreen = "Delete" } // Переход в экран удаления
         )
         "Add" -> AddMovieScreen(
             onMovieAdded = { movie ->
@@ -44,11 +46,31 @@ fun MovieBookingApp() {
             movieList = movieList,
             onBack = { currentScreen = "Home" }
         )
+        "Edit" -> EditMovieScreen(
+            onMovieEdited = { oldName, newName ->
+                movieList = movieList.map { if (it == oldName) newName else it }
+                currentScreen = "Home"
+            },
+            onBack = { currentScreen = "Home" }
+        )
+        "Delete" -> DeleteMovieScreen(
+            movieList = movieList,
+            onMovieDeleted = { movie ->
+                movieList = movieList.filter { it != movie }
+                currentScreen = "Home"
+            },
+            onBack = { currentScreen = "Home" }
+        )
     }
 }
 
 @Composable
-fun HomeScreen(onNavigateToAdd: () -> Unit, onNavigateToList: () -> Unit) {
+fun HomeScreen(
+    onNavigateToAdd: () -> Unit,
+    onNavigateToList: () -> Unit,
+    onNavigateToEdit: () -> Unit,
+    onNavigateToDelete: () -> Unit
+) {
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -61,6 +83,14 @@ fun HomeScreen(onNavigateToAdd: () -> Unit, onNavigateToList: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onNavigateToList) {
                 Text("Посмотреть список фильмов")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onNavigateToEdit) {
+                Text("Редактировать фильм")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onNavigateToDelete) {
+                Text("Удалить фильм")
             }
         }
     }
@@ -119,6 +149,90 @@ fun MovieListScreen(movieList: List<String>, onBack: () -> Unit) {
                         .padding(4.dp)
                         .clickable { /* Реализуйте действия при клике, если необходимо */ }
                 )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onBack) {
+                Text("Назад")
+            }
+        }
+    }
+}
+
+@Composable
+fun EditMovieScreen(onMovieEdited: (String, String) -> Unit, onBack: () -> Unit) {
+    var oldMovieName by remember { mutableStateOf(TextFieldValue("")) }
+    var newMovieName by remember { mutableStateOf(TextFieldValue("")) }
+
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text("Введите название фильма для редактирования")
+            Spacer(modifier = Modifier.height(8.dp))
+            BasicTextField(
+                value = oldMovieName,
+                onValueChange = { oldMovieName = it },
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(0.8f)
+                    .height(50.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Введите новое название фильма")
+            Spacer(modifier = Modifier.height(8.dp))
+            BasicTextField(
+                value = newMovieName,
+                onValueChange = { newMovieName = it },
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(0.8f)
+                    .height(50.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                if (oldMovieName.text.isNotBlank() && newMovieName.text.isNotBlank()) {
+                    onMovieEdited(oldMovieName.text, newMovieName.text)
+                }
+            }) {
+                Text("Редактировать")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onBack) {
+                Text("Назад")
+            }
+        }
+    }
+}
+
+@Composable
+fun DeleteMovieScreen(movieList: List<String>, onMovieDeleted: (String) -> Unit, onBack: () -> Unit) {
+    var selectedMovie by remember { mutableStateOf("") }
+
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text("Выберите фильм для удаления")
+            Spacer(modifier = Modifier.height(8.dp))
+            movieList.forEach { movie ->
+                Button(
+                    onClick = { selectedMovie = movie },
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    Text(movie)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                if (selectedMovie.isNotEmpty()) {
+                    onMovieDeleted(selectedMovie)
+                }
+            }) {
+                Text("Удалить выбранный фильм")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onBack) {
